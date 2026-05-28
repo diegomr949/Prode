@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  prode-db:
+    image: postgres:15-alpine
+    container_name: prode-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: prode_admin
+      POSTGRES_PASSWORD: super_password_123
+      POSTGRES_DB: prode_mundial_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - prode_pgdata:/var/lib/postgresql/data
+
+volumes:
+  prode_pgdata:
+    name: prode_pgdata

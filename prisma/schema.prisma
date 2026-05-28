@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            Int          @id @default(autoincrement())
+  nombre        String
+  email         String       @unique
+  password      String
+  area          String?
+  rol           String       @default("ROLE_USER")
+  puntosTotales Int          @default(0)
+  plenosTotales Int          @default(0)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  
+  predictions   Prediction[]
+}
+
+model Team {
+  id                Int      @id @default(autoincrement())
+  nombre            String   @unique
+  grupo             String
+  banderaUrl        String
+  rankFifa          Int?
+  titulosMundiales  Int      @default(0)
+  
+  homeMatches       Match[]  @relation("HomeTeam")
+  awayMatches       Match[]  @relation("AwayTeam")
+  players           Player[]
+}
+
+model Player {
+  id          Int      @id @default(autoincrement())
+  nombre      String
+  posicion    String
+  nroCamiseta Int
+  esEstrella  Boolean  @default(false)
+  teamId      Int
+  
+  team        Team     @relation(fields: [teamId], references: [id])
+}
+
+model Match {
+  id               Int          @id @default(autoincrement())
+  grupo            String
+  fechaHora        DateTime
+  homeTeamId       Int
+  awayTeamId       Int
+  golesLocal       Int?
+  golesVisitante   Int?
+  estado           String       @default("PENDIENTE") // PENDIENTE, EN_JUEGO, FINALIZADO
+  
+  homeTeam         Team         @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam         Team         @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  predictions      Prediction[]
+}
+
+model Prediction {
+  id                      Int      @id @default(autoincrement())
+  userId                  Int
+  matchId                 Int
+  golesLocalPredichos     Int
+  golesVisitantePredichos Int
+  puntosObtenidos         Int?
+  fechaCarga              DateTime @default(now())
+  
+  user                    User     @relation(fields: [userId], references: [id])
+  match                   Match    @relation(fields: [matchId], references: [id])
+
+  @@unique([userId, matchId])
+}
